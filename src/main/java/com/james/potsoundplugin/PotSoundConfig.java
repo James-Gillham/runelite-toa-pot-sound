@@ -7,10 +7,6 @@ import net.runelite.client.config.Range;
 
 @ConfigGroup("potsound")
 public interface PotSoundConfig extends Config {
-	@ConfigItem(keyName = "bankDepositSound", name = "Bank Deposit Sound", description = "Play a sound when depositing items", position = 1)
-	default boolean bankDepositSound() {
-		return true;
-	}
 
 	@Range(min = 0, max = 100)
 	@ConfigItem(keyName = "announcementVolume", name = "Announcement Volume", description = "The volume of the sound announcement", position = 3)

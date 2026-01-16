@@ -39,9 +39,6 @@ public class PotSoundPlugin extends Plugin {
 
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event) {
-		if (!config.bankDepositSound()) {
-			return;
-		}
 
 		String option = event.getMenuOption();
 		String target = Text.removeTags(event.getMenuTarget()).toLowerCase();
