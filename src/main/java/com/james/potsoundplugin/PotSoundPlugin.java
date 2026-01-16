@@ -3,37 +3,39 @@ package com.james.potsoundplugin;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
 import net.runelite.api.events.MenuOptionClicked;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.client.audio.AudioPlayer;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.util.Text;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @PluginDescriptor(name = "ToA Pot Sound")
 public class PotSoundPlugin extends Plugin {
+	private static final Set<Integer> TOA_REGIONS = new HashSet<>(Arrays.asList(
+			13454, 14160, 14672, 15184, 15696, 14164, 14676, 15188, 15444, 15700, 15955, 15956, 16211));
+
+	@Inject
+	private Client client;
+
 	@Inject
 	private PotSoundConfig config;
 
 	@Inject
 	private AudioPlayer audioPlayer;
-
-	@Override
-	protected void startUp() throws Exception {
-		log.info("ToA Pot Sound started!");
-	}
-
-	@Override
-	protected void shutDown() throws Exception {
-		log.info("ToA Pot Sound stopped!");
-	}
 
 	@Subscribe
 	public void onMenuOptionClicked(MenuOptionClicked event) {
@@ -42,10 +44,42 @@ public class PotSoundPlugin extends Plugin {
 		}
 
 		String option = event.getMenuOption();
+		String target = Text.removeTags(event.getMenuTarget()).toLowerCase();
 
-		if (option.startsWith("Deposit") || option.equals("Deposit inventory") || option.equals("Deposit equipment")) {
-			playClip(config.soundPath());
+		boolean isToA = isInToA();
+		boolean isDepositBoxOpen = client.getWidget(InterfaceID.DEPOSIT_BOX, 0) != null;
+
+		boolean isDepositPotObject = target.contains("deposit pot");
+		// In the deposit box interface, items have option "Deposit-Items" or just
+		// "Deposit"
+		// The "Deposit inventory" button in the interface has option "Deposit
+		// inventory"
+		boolean isInterfaceDeposit = isDepositBoxOpen
+				&& (option.startsWith("Deposit") || option.equals("Deposit inventory"));
+
+		if (isToA) {
+			if (isDepositPotObject && (option.equals("Deposit-inventory") || option.equals("Deposit-loot"))) {
+				// Clicking the object itself
+				playClip(config.soundPath());
+			} else if (isInterfaceDeposit) {
+				// Action within the interface while in ToA
+				playClip(config.soundPath());
+			}
 		}
+	}
+
+	private boolean isInToA() {
+		int[] regions = client.getMapRegions();
+		if (regions == null || regions.length == 0) {
+			return false;
+		}
+
+		for (int region : regions) {
+			if (TOA_REGIONS.contains(region)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void playClip(String path) {
@@ -56,7 +90,6 @@ public class PotSoundPlugin extends Plugin {
 			if (file.exists()) {
 				audioPlayer.play(file, gain);
 			} else {
-				// Add leading slash for getResourceAsStream if not present
 				String resourcePath = path.startsWith("/") ? path : "/" + path;
 				InputStream inputStream = getClass().getResourceAsStream(resourcePath);
 				if (inputStream != null) {
