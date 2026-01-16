@@ -47,20 +47,14 @@ public class PotSoundPlugin extends Plugin {
 		boolean isDepositBoxOpen = client.getWidget(InterfaceID.DEPOSIT_BOX, 0) != null;
 
 		boolean isDepositPotObject = target.contains("deposit pot");
-		// In the deposit box interface, items have option "Deposit-Items" or just
-		// "Deposit"
-		// The "Deposit inventory" button in the interface has option "Deposit
-		// inventory"
 		boolean isInterfaceDeposit = isDepositBoxOpen
 				&& (option.startsWith("Deposit") || option.equals("Deposit inventory"));
 
 		if (isToA) {
 			if (isDepositPotObject && (option.equals("Deposit-inventory") || option.equals("Deposit-loot"))) {
-				// Clicking the object itself
-				playClip(config.soundPath());
+				playClip("deposit.wav");
 			} else if (isInterfaceDeposit) {
-				// Action within the interface while in ToA
-				playClip(config.soundPath());
+				playClip("deposit.wav");
 			}
 		}
 	}
@@ -80,7 +74,7 @@ public class PotSoundPlugin extends Plugin {
 	}
 
 	private void playClip(String path) {
-		float gain = 20f * (float) Math.log10(config.announcementVolume() / 100f);
+		float gain = 20f * (float) Math.log10(config.potVolume() / 100f);
 
 		try {
 			File file = new File(path);

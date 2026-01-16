@@ -9,13 +9,9 @@ import net.runelite.client.config.Range;
 public interface PotSoundConfig extends Config {
 
 	@Range(min = 0, max = 100)
-	@ConfigItem(keyName = "announcementVolume", name = "Announcement Volume", description = "The volume of the sound announcement", position = 3)
-	default int announcementVolume() {
+	@ConfigItem(keyName = "potVolume", name = "Pot Sound Volume", description = "The volume of the pot sound", position = 1)
+	default int potVolume() {
 		return 100;
 	}
 
-	@ConfigItem(keyName = "soundPath", name = "Sound File Path", description = "The path to the .wav file to play (defaults to bundled deposit.wav)", position = 4)
-	default String soundPath() {
-		return "deposit.wav";
-	}
 }
